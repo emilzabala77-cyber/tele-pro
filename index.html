@@ -3,39 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Pro</title>
-    <link rel="manifest" href="manifest.json">
+    <title>IPTV Pro Max</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        #reloj { position: absolute; top: 10px; right: 10px; color: rgba(255,255,255,0.5); font-size: 14px; }
-        video { flex-grow: 1; width: 100%; background: #000; }
-        .controls { padding: 15px; display: flex; gap: 10px; background: #111; }
-        input { flex-grow: 1; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: white; }
-        button { padding: 10px 20px; border-radius: 5px; border: none; background: #00d4ff; color: black; font-weight: bold; cursor: pointer; }
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; }
+        #reloj { position: absolute; top: 15px; right: 15px; color: #00d4ff; font-weight: bold; text-shadow: 0 0 5px #000; }
+        video { flex-grow: 1; width: 100%; background: #000; border-bottom: 2px solid #222; }
+        .controls { padding: 20px; display: flex; gap: 10px; background: #111; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
+        input { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; outline: none; }
+        button { padding: 12px 25px; border-radius: 8px; border: none; background: #00d4ff; color: #000; font-weight: bold; cursor: pointer; }
+        button:hover { background: #00b3d9; }
     </style>
 </head>
 <body>
 
     <div id="reloj">00:00:00</div>
-   <video id="video" controls playsinline crossorigin="anonymous" style="width:100%; height:auto; background:black;"></video>
+    
+    <video id="video" controls playsinline crossorigin="anonymous"></video>
+
     <div class="controls">
-        <input type="text" id="m3u-url" placeholder="Pega link .m3u8 aquí...">
-        <button onclick="loadStream()">VER</button>
+        <input type="text" id="m3u-url" placeholder="Pega el link del canal aquí...">
+        <button onclick="loadStream()">VER CANAL</button>
     </div>
 
     <script>
-        function updateClock() {
+        // Actualizar el reloj cada segundo
+        setInterval(() => {
             document.getElementById('reloj').textContent = new Date().toLocaleTimeString();
-        }
-        setInterval(updateClock, 1000);
+        }, 1000);
 
         const video = document.getElementById('video');
         const input = document.getElementById('m3u-url');
 
+        // Esta es la función que te faltaba
         function loadStream() {
-            const url = input.value.trim();
-            if (!url) return;
+            let url = input.value.trim();
+            if (!url) return alert("Pega un link primero");
+
+            // Si no es el link de Apple, usamos un servidor de ayuda para evitar bloqueos
+            if (!url.includes("apple.com") && !url.includes("mux.dev")) {
+                url = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+            }
 
             if (Hls.isSupported()) {
                 const hls = new Hls();
@@ -46,10 +54,6 @@
                 video.src = url;
                 video.play();
             }
-        }
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>
