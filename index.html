@@ -2,54 +2,51 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>IPTV Smart Player</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
+    <title>IPTV PRO VENEZUELA</title>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; }
-        #video { flex-grow: 1; width: 100%; background: #111; }
-        .controls { padding: 15px; background: #222; display: flex; gap: 10px; }
-        input { flex-grow: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #000; color: #00d4ff; }
-        button { padding: 10px 20px; background: #00d4ff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        #log { font-size: 10px; color: #888; padding: 5px; background: #111; }
+        body { margin: 0; background: #000; color: white; font-family: Arial; }
+        .vjs-matrix.video-js { color: #00ff00; }
+        .controls { padding: 20px; background: #111; display: flex; gap: 10px; justify-content: center; }
+        input { width: 60%; padding: 12px; border-radius: 5px; border: none; }
+        button { padding: 12px 25px; background: #e50914; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        #status { text-align: center; color: #888; font-size: 12px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div id="log">Estado: Esperando...</div>
-    <video id="video" controls playsinline></video>
+
+    <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" width="1280" height="720" data-setup="{}">
+        <p class="vjs-no-js">Para ver este video, habilite JavaScript.</p>
+    </video>
+
     <div class="controls">
-        <input type="text" id="url" placeholder="Pega el link .m3u8 aquí">
-        <button onclick="reproducir()">VER CANAL</button>
+        <input type="text" id="url" placeholder="Pega el link m3u8 aquí...">
+        <button onclick="cargarCanal()">CARGAR</button>
     </div>
+    <div id="status">Estado: Esperando enlace...</div>
 
     <script>
-        function reproducir() {
-            const video = document.getElementById('video');
-            const log = document.getElementById('log');
-            let url = document.getElementById('url').value.trim();
-            if (!url) return;
+        function cargarCanal() {
+            var player = videojs('my-video');
+            var url = document.getElementById('url').value.trim();
+            var status = document.getElementById('status');
 
-            log.textContent = "Conectando como Smart TV...";
-
-            if (Hls.isSupported()) {
-                const hls = new Hls({
-                    // Esto ayuda a saltar bloqueos de seguridad
-                    xhrSetup: function(xhr) {
-                        xhr.withCredentials = false;
-                    }
+            if (url) {
+                status.textContent = "Intentando conectar con el servidor...";
+                player.src({
+                    src: url,
+                    type: 'application/x-mpegURL'
                 });
-                hls.loadSource(url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    log.textContent = "¡Éxito! Reproduciendo...";
-                    video.play();
+                player.play();
+                
+                player.on('error', function() {
+                    status.textContent = "Error: El canal no responde. Intenta con VPN activa.";
                 });
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    log.textContent = "Error de red. Intenta con VPN activa.";
+                
+                player.on('playing', function() {
+                    status.textContent = "Reproduciendo en vivo";
                 });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Modo nativo para Safari en Mac
-                video.src = url;
-                video.play();
             }
         }
     </script>
