@@ -2,101 +2,92 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>IPTV Venezuela - Master Player</title>
+    <title>IPTV Venezuela - AutoSave</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
         body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Lateral */
         .sidebar { width: 300px; background: #111; border-right: 1px solid #333; display: flex; flex-direction: column; }
         .sidebar-header { padding: 15px; border-bottom: 1px solid #333; background: #1a1a1a; }
-        
-        /* Secciones de la lista */
-        .section-title { font-size: 12px; color: #fb542b; padding: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
         #channel-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        
-        /* Botones */
-        .channel-btn { width: 100%; padding: 12px; background: #222; border: none; color: white; text-align: left; margin-bottom: 5px; cursor: pointer; border-radius: 5px; font-size: 13px; display: block; }
+        .section-title { font-size: 11px; color: #fb542b; padding: 10px 5px; text-transform: uppercase; font-weight: bold; }
+        .channel-btn { width: 100%; padding: 10px; background: #222; border: none; color: white; text-align: left; margin-bottom: 4px; cursor: pointer; border-radius: 4px; font-size: 12px; }
         .channel-btn:hover { background: #fb542b; }
-        .fixed-ch { border-left: 3px solid #fb542b; } /* Marca para canales fijos */
-
-        /* Área Principal */
-        .main { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+        .main { flex-grow: 1; display: flex; flex-direction: column; }
         .video-js { width: 100% !important; height: 100% !important; }
-        
-        /* Botón de carga */
-        .file-label { background: #333; padding: 10px; display: block; text-align: center; cursor: pointer; border-radius: 5px; font-size: 12px; transition: 0.3s; }
-        .file-label:hover { background: #444; }
+        .file-label { background: #fb542b; padding: 10px; display: block; text-align: center; cursor: pointer; border-radius: 5px; font-weight: bold; }
         #file-input { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <label for="file-input" class="file-label">📂 CARGAR MI LISTA (.M3U)</label>
-            <input type="file" id="file-input" accept=".m3u,.txt">
-        </div>
-
-        <div id="channel-list">
-            <div class="section-title">Canales Estables</div>
-            <button class="channel-btn fixed-ch" onclick="play('https://telesur.akamaized.net/hls/main.m3u8')">📺 TeleSUR (Noticias)</button>
-            <button class="channel-btn fixed-ch" onclick="play('https://vevo-latino-1-es.samsung.wurl.com/manifest/playlist.m3u8')">🎵 Vevo Latino</button>
-            <button class="channel-btn fixed-ch" onclick="play('https://cm-cl-cl-samsung.vustreams.com/cl-cl/38473347-1965-4f36-928d-299387606342/playlist.m3u8')">🎬 Cine Clásico</button>
-            
-            <div id="user-channels-title" class="section-title" style="display:none;">Mi Lista Cargada</div>
+<div class="sidebar">
+    <div class="sidebar-header">
+        <label for="file-input" class="file-label">📂 CARGAR LISTA .M3U</label>
+        <input type="file" id="file-input" accept=".m3u,.txt">
+    </div>
+    <div id="channel-list">
+        <div class="section-title">Canales de Emergencia</div>
+        <button class="channel-btn" onclick="play('https://telesur.akamaized.net/hls/main.m3u8')">📺 TeleSUR</button>
+        <div id="user-section" style="display:none;">
+            <div class="section-title">Mi Lista Guardada</div>
             <div id="user-channels"></div>
         </div>
     </div>
+</div>
 
-    <div class="main">
-        <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto"></video>
-    </div>
+<div class="main">
+    <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+</div>
 
-    <script>
-        var player = videojs('my-video');
+<script>
+    var player = videojs('my-video');
 
-        // Función para reproducir
-        function play(url) {
-            if(!url) return;
-            player.src({ src: url, type: 'application/x-mpegURL' });
-            player.play().catch(function(error) {
-                console.log("Error al reproducir. Verifica tu VPN.");
-            });
+    // Al abrir la App, revisamos si hay una lista guardada
+    window.onload = function() {
+        const savedList = localStorage.getItem('iptv_list');
+        if (savedList) {
+            parseM3U(savedList);
         }
+    };
 
-        // Lógica para leer el archivo subido
-        document.getElementById('file-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = function(event) {
-                const content = event.target.result;
-                const container = document.getElementById('user-channels');
-                document.getElementById('user-channels-title').style.display = 'block';
-                container.innerHTML = ''; // Limpiar lista previa cargada
+    function play(url) {
+        player.src({ src: url, type: 'application/x-mpegURL' });
+        player.play();
+    }
 
-                const lines = content.split('\n');
-                let currentName = '';
+    document.getElementById('file-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const content = event.target.result;
+            localStorage.setItem('iptv_list', content); // GUARDAR EN MEMORIA
+            parseM3U(content);
+        };
+        reader.readAsText(file);
+    });
 
-                lines.forEach(line => {
-                    line = line.trim();
-                    if (line.startsWith('#EXTINF:')) {
-                        currentName = line.split(',').pop();
-                    } else if (line.startsWith('http')) {
-                        const btn = document.createElement('button');
-                        btn.className = 'channel-btn';
-                        btn.textContent = '📄 ' + (currentName || 'Canal Desconocido');
-                        const url = line;
-                        btn.onclick = () => play(url);
-                        container.appendChild(btn);
-                        currentName = '';
-                    }
-                });
-            };
-            reader.readAsText(file);
+    function parseM3U(content) {
+        const container = document.getElementById('user-channels');
+        document.getElementById('user-section').style.display = 'block';
+        container.innerHTML = '';
+        const lines = content.split('\n');
+        let name = '';
+        lines.forEach(line => {
+            line = line.trim();
+            if (line.startsWith('#EXTINF:')) {
+                name = line.split(',').pop();
+            } else if (line.startsWith('http')) {
+                const btn = document.createElement('button');
+                btn.className = 'channel-btn';
+                btn.textContent = '🔹 ' + (name || 'Canal');
+                const url = line;
+                btn.onclick = () => play(url);
+                container.appendChild(btn);
+                name = '';
+            }
         });
-    </script>
+    }
+</script>
 </body>
 </html>
