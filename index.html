@@ -2,53 +2,89 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>IPTV Venezuela - AutoSave</title>
+    <title>IPTV Venezuela Premium</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 300px; background: #111; border-right: 1px solid #333; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; border-bottom: 1px solid #333; background: #1a1a1a; }
-        #channel-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        .section-title { font-size: 11px; color: #fb542b; padding: 10px 5px; text-transform: uppercase; font-weight: bold; }
-        .channel-btn { width: 100%; padding: 10px; background: #222; border: none; color: white; text-align: left; margin-bottom: 4px; cursor: pointer; border-radius: 4px; font-size: 12px; }
-        .channel-btn:hover { background: #fb542b; }
-        .main { flex-grow: 1; display: flex; flex-direction: column; }
-        .video-js { width: 100% !important; height: 100% !important; }
-        .file-label { background: #fb542b; padding: 10px; display: block; text-align: center; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        :root { --accent: #fb542b; --bg: #000; --side: #111; }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Barra Lateral */
+        .sidebar { width: 320px; background: var(--side); border-right: 1px solid #333; display: flex; flex-direction: column; transition: 0.3s; }
+        .sidebar-header { padding: 20px; background: #1a1a1a; border-bottom: 1px solid #333; }
+        
+        /* Reloj y Fecha */
+        .info-box { text-align: center; margin-bottom: 15px; border: 1px solid #444; padding: 10px; border-radius: 8px; background: #000; }
+        #clock { font-size: 24px; font-weight: bold; color: var(--accent); }
+        #date { font-size: 12px; color: #888; text-transform: uppercase; }
+
+        /* Buscador y Carga */
+        .search-box { width: 100%; padding: 8px; margin-bottom: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        .file-label { background: var(--accent); padding: 10px; display: block; text-align: center; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 12px; }
         #file-input { display: none; }
+
+        /* Lista de Canales */
+        #channel-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
+        .channel-btn { width: 100%; padding: 12px; background: #222; border: none; color: white; text-align: left; margin-bottom: 5px; cursor: pointer; border-radius: 5px; font-size: 13px; display: flex; align-items: center; }
+        .channel-btn:hover { background: #333; border-left: 4px solid var(--accent); }
+        
+        /* Video */
+        .main { flex-grow: 1; display: flex; flex-direction: column; background: #000; position: relative; }
+        .video-js { width: 100% !important; height: 100% !important; }
+        
+        /* Estilo para los controles de VideoJS */
+        .vjs-matrix.video-js { color: var(--accent); }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <div class="sidebar-header">
-        <label for="file-input" class="file-label">📂 CARGAR LISTA .M3U</label>
+        <div class="info-box">
+            <div id="clock">00:00:00</div>
+            <div id="date">CARGANDO FECHA...</div>
+        </div>
+        <input type="text" id="search" class="search-box" placeholder="Buscar canal..." onkeyup="filterChannels()">
+        <label for="file-input" class="file-label">📂 CARGAR LISTA M3U</label>
         <input type="file" id="file-input" accept=".m3u,.txt">
     </div>
+
     <div id="channel-list">
-        <div class="section-title">Canales de Emergencia</div>
-        <button class="channel-btn" onclick="play('https://telesur.akamaized.net/hls/main.m3u8')">📺 TeleSUR</button>
-        <div id="user-section" style="display:none;">
-            <div class="section-title">Mi Lista Guardada</div>
-            <div id="user-channels"></div>
-        </div>
+        <div style="color:var(--accent); font-size:11px; padding:10px;">CANALES PREDETERMINADOS</div>
+        <button class="channel-btn" onclick="play('https://telesur.akamaized.net/hls/main.m3u8')">📺 TeleSUR Noticias</button>
+        <button class="channel-btn" onclick="play('https://vevo-latino-1-es.samsung.wurl.com/manifest/playlist.m3u8')">🎵 Vevo Latino</button>
+        <div id="user-channels"></div>
     </div>
 </div>
 
 <div class="main">
-    <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+    <video id="my-video" class="video-js vjs-big-play-centered vjs-matrix" controls preload="auto">
+        </video>
 </div>
 
 <script>
-    var player = videojs('my-video');
-
-    // Al abrir la App, revisamos si hay una lista guardada
-    window.onload = function() {
-        const savedList = localStorage.getItem('iptv_list');
-        if (savedList) {
-            parseM3U(savedList);
+    // Inicializar reproductor con soporte de idiomas y subtítulos
+    var player = videojs('my-video', {
+        fluid: true,
+        controlBar: {
+            subsCapsButton: true,
+            audioTrackButton: true
         }
+    });
+
+    // REloj y Fecha
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('clock').textContent = now.toLocaleTimeString();
+        document.getElementById('date').textContent = now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Memoria Local: Cargar lista guardada al iniciar
+    window.onload = function() {
+        const saved = localStorage.getItem('my_iptv_list');
+        if (saved) parseM3U(saved);
     };
 
     function play(url) {
@@ -56,12 +92,22 @@
         player.play();
     }
 
+    // Buscador
+    function filterChannels() {
+        const query = document.getElementById('search').value.toLowerCase();
+        const btns = document.getElementsByClassName('channel-btn');
+        Array.from(btns).forEach(btn => {
+            btn.style.display = btn.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+        });
+    }
+
+    // Procesar Archivo M3U
     document.getElementById('file-input').addEventListener('change', function(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = function(event) {
             const content = event.target.result;
-            localStorage.setItem('iptv_list', content); // GUARDAR EN MEMORIA
+            localStorage.setItem('my_iptv_list', content);
             parseM3U(content);
         };
         reader.readAsText(file);
@@ -69,8 +115,7 @@
 
     function parseM3U(content) {
         const container = document.getElementById('user-channels');
-        document.getElementById('user-section').style.display = 'block';
-        container.innerHTML = '';
+        container.innerHTML = '<div style="color:var(--accent); font-size:11px; padding:10px;">MI LISTA CARGADA</div>';
         const lines = content.split('\n');
         let name = '';
         lines.forEach(line => {
@@ -80,7 +125,7 @@
             } else if (line.startsWith('http')) {
                 const btn = document.createElement('button');
                 btn.className = 'channel-btn';
-                btn.textContent = '🔹 ' + (name || 'Canal');
+                btn.innerHTML = '🔹 ' + (name || 'Canal');
                 const url = line;
                 btn.onclick = () => play(url);
                 container.appendChild(btn);
