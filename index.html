@@ -2,43 +2,28 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Player Pro</title>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+    <title>IPTV Simple</title>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
-        #player { flex-grow: 1; width: 100%; background: #000; }
-        .controls { padding: 20px; background: #111; display: flex; gap: 10px; border-top: 1px solid #333; }
-        input { flex-grow: 1; padding: 12px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; }
-        button { padding: 12px 25px; border-radius: 5px; border: none; background: #e50914; color: white; font-weight: bold; cursor: pointer; }
+        body { margin: 0; background: #000; color: white; text-align: center; font-family: sans-serif; }
+        video { width: 100%; max-width: 800px; background: #222; margin-top: 20px; }
+        .box { padding: 20px; }
+        input { padding: 10px; width: 60%; border-radius: 5px; }
+        button { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <div id="player"></div>
-
-    <div class="controls">
-        <input type="text" id="url-input" placeholder="Pega el link .m3u8 aquí...">
-        <button onclick="playVideo()">CARGAR</button>
+    <video id="reproductor" controls autoplay playsinline></video>
+    <div class="box">
+        <input type="text" id="url" placeholder="Pega el link .m3u8 aquí">
+        <button onclick="ver()">VER CANAL</button>
     </div>
 
     <script>
-        // Inicializamos el reproductor vacío
-        var player = new Clappr.Player({
-            source: "https://ntv1.akamaized.net/hls/live/2014049/NASA-NTV1-HLS/master.m3u8", // Carga NASA por defecto
-            parentId: "#player",
-            width: '100%',
-            height: '100%',
-            autoPlay: false,
-            preload: 'auto'
-        });
-
-        function playVideo() {
-            var url = document.getElementById('url-input').value.trim();
-            if (url) {
-                player.configure({source: url});
-                player.play();
-            }
+        function ver() {
+            var v = document.getElementById('reproductor');
+            var u = document.getElementById('url').value;
+            v.src = u;
+            v.play();
         }
     </script>
 </body>
