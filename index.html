@@ -2,51 +2,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>IPTV PRO VENEZUELA</title>
-    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <title>IPTV Brave Player</title>
+    <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
+    <script src="https://unpkg.com/video.js/dist/video.min.js"></script>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: Arial; }
-        .vjs-matrix.video-js { color: #00ff00; }
-        .controls { padding: 20px; background: #111; display: flex; gap: 10px; justify-content: center; }
-        input { width: 60%; padding: 12px; border-radius: 5px; border: none; }
-        button { padding: 12px 25px; background: #e50914; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        #status { text-align: center; color: #888; font-size: 12px; margin-top: 10px; }
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; }
+        .player-container { width: 100%; max-width: 800px; margin: 20px auto; }
+        .video-js { width: 100%; height: 450px; border-radius: 8px; overflow: hidden; }
+        .controls { text-align: center; margin-top: 20px; }
+        input { width: 60%; padding: 12px; border-radius: 5px; border: 1px solid #444; background: #222; color: #00d4ff; }
+        button { padding: 12px 25px; background: #fb542b; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
     </style>
 </head>
 <body>
 
-    <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" width="1280" height="720" data-setup="{}">
-        <p class="vjs-no-js">Para ver este video, habilite JavaScript.</p>
-    </video>
-
-    <div class="controls">
-        <input type="text" id="url" placeholder="Pega el link m3u8 aquí...">
-        <button onclick="cargarCanal()">CARGAR</button>
+    <div class="player-container">
+        <video id="video-brave" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto"></video>
+        
+        <div class="controls">
+            <input type="text" id="url-input" placeholder="Pega el link .m3u8 aquí...">
+            <button onclick="loadStream()">CARGAR CANAL</button>
+        </div>
     </div>
-    <div id="status">Estado: Esperando enlace...</div>
 
     <script>
-        function cargarCanal() {
-            var player = videojs('my-video');
-            var url = document.getElementById('url').value.trim();
-            var status = document.getElementById('status');
+        // Inicializamos el reproductor
+        var player = videojs('video-brave');
 
+        function loadStream() {
+            var url = document.getElementById('url-input').value.trim();
             if (url) {
-                status.textContent = "Intentando conectar con el servidor...";
                 player.src({
                     src: url,
                     type: 'application/x-mpegURL'
                 });
                 player.play();
-                
-                player.on('error', function() {
-                    status.textContent = "Error: El canal no responde. Intenta con VPN activa.";
-                });
-                
-                player.on('playing', function() {
-                    status.textContent = "Reproduciendo en vivo";
-                });
             }
         }
     </script>
