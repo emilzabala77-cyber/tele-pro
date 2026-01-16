@@ -1,22 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Test IPTV</title>
+    <title>IPTV Smart Player</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; }
+        #video { flex-grow: 1; width: 100%; background: #111; }
+        .controls { padding: 15px; background: #222; display: flex; gap: 10px; }
+        input { flex-grow: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #000; color: #00d4ff; }
+        button { padding: 10px 20px; background: #00d4ff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        #log { font-size: 10px; color: #888; padding: 5px; background: #111; }
+    </style>
 </head>
-<body style="background:black; color:white; text-align:center;">
-    <h2>Reproductor Directo</h2>
-    <video id="v" controls width="100%" style="max-width:600px; background:#222;"></video>
-    <br><br>
-    <input type="text" id="u" placeholder="Pega link m3u8 aquí" style="width:80%; padding:10px;">
-    <button onclick="p()" style="padding:10px;">PROBAR</button>
+<body>
+    <div id="log">Estado: Esperando...</div>
+    <video id="video" controls playsinline></video>
+    <div class="controls">
+        <input type="text" id="url" placeholder="Pega el link .m3u8 aquí">
+        <button onclick="reproducir()">VER CANAL</button>
+    </div>
 
     <script>
-        function p() {
-            var video = document.getElementById('v');
-            var url = document.getElementById('u').value.trim();
-            video.src = url;
-            video.play().catch(e => alert("Error: Haz clic en Play manualmente"));
+        function reproducir() {
+            const video = document.getElementById('video');
+            const log = document.getElementById('log');
+            let url = document.getElementById('url').value.trim();
+            if (!url) return;
+
+            log.textContent = "Conectando como Smart TV...";
+
+            if (Hls.isSupported()) {
+                const hls = new Hls({
+                    // Esto ayuda a saltar bloqueos de seguridad
+                    xhrSetup: function(xhr) {
+                        xhr.withCredentials = false;
+                    }
+                });
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    log.textContent = "¡Éxito! Reproduciendo...";
+                    video.play();
+                });
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    log.textContent = "Error de red. Intenta con VPN activa.";
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Modo nativo para Safari en Mac
+                video.src = url;
+                video.play();
+            }
         }
     </script>
 </body>
