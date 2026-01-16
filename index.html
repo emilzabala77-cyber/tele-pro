@@ -2,28 +2,42 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>IPTV Simple</title>
+    <title>IPTV Super Player</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
     <style>
-        body { margin: 0; background: #000; color: white; text-align: center; font-family: sans-serif; }
-        video { width: 100%; max-width: 800px; background: #222; margin-top: 20px; }
-        .box { padding: 20px; }
-        input { padding: 10px; width: 60%; border-radius: 5px; }
-        button { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; }
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
+        video { flex-grow: 1; width: 100%; background: #000; }
+        .bar { padding: 20px; background: #111; display: flex; gap: 10px; }
+        input { flex-grow: 1; padding: 12px; border-radius: 5px; border: 1px solid #333; background: #222; color: white; }
+        button { padding: 12px 20px; background: #007bff; border: none; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <video id="reproductor" controls autoplay playsinline></video>
-    <div class="box">
+    <video id="video" controls></video>
+    <div class="bar">
         <input type="text" id="url" placeholder="Pega el link .m3u8 aquí">
-        <button onclick="ver()">VER CANAL</button>
+        <button onclick="conectar()">CONECTAR</button>
     </div>
 
     <script>
-        function ver() {
-            var v = document.getElementById('reproductor');
-            var u = document.getElementById('url').value;
-            v.src = u;
-            v.play();
+        function conectar() {
+            const video = document.getElementById('video');
+            const url = document.getElementById('url').value.trim();
+            
+            if (Hls.isSupported()) {
+                const hls = new Hls({
+                    // ESTO ENGAÑA AL SERVIDOR PARA QUE NO BLOQUEE
+                    xhrSetup: function(xhr) {
+                        xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1');
+                    }
+                });
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+            } else {
+                video.src = url;
+                video.play();
+            }
         }
     </script>
 </body>
