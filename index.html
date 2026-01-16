@@ -1,110 +1,22 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>IPTV Total Player</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
-    <style>
-        body { margin: 0; background: #111; color: white; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
-        .header { padding: 10px; background: #000; text-align: center; font-size: 12px; color: #00d4ff; }
-        video { flex-grow: 1; width: 100%; background: #000; }
-        .controls { padding: 20px; background: #000; display: flex; gap: 10px; }
-        input { flex-grow: 1; padding: 12px; border-radius: 5px; border: 1px solid #333; background: #222; color: white; }
-        button { padding: 12px 25px; background: #00d4ff; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 5px; }
-    </style>
+    <title>Test IPTV</title>
 </head>
-<body>
-    <div class="header">ESTADO: <span id="status">LISTO</span></div>
-    <video id="video" controls playsinline></video>
-    <div class="controls">
-        <input type="text" id="url" placeholder="Pega aquí el link .m3u8">
-        <button onclick="forzarCarga()">VER AHORA</button>
-    </div>
+<body style="background:black; color:white; text-align:center;">
+    <h2>Reproductor Directo</h2>
+    <video id="v" controls width="100%" style="max-width:600px; background:#222;"></video>
+    <br><br>
+    <input type="text" id="u" placeholder="Pega link m3u8 aquí" style="width:80%; padding:10px;">
+    <button onclick="p()" style="padding:10px;">PROBAR</button>
 
     <script>
-        function forzarCarga() {
-            const video = document.getElementById('video');
-            const status = document.getElementById('status');
-            let url = document.getElementById('url').value.trim();
-            
-            if (!url) return;
-            status.textContent = "CONECTANDO...";
-
-            // Túnel para saltar bloqueos de internet
-            const tunnelUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(tunnelUrl);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    status.textContent = "TRANSMITIENDO";
-                    video.play();
-                });
-                hls.on(Hls.Events.ERROR, () => {
-                    // Si el túnel falla, intentamos directo
-                    hls.loadSource(url);
-                    status.textContent = "INTENTO DIRECTO...";
-                });
-            } else {
-                video.src = url;
-                video.play();
-            }
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>IPTV Total Player</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
-    <style>
-        body { margin: 0; background: #111; color: white; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
-        .header { padding: 10px; background: #000; text-align: center; font-size: 12px; color: #00d4ff; }
-        video { flex-grow: 1; width: 100%; background: #000; }
-        .controls { padding: 20px; background: #000; display: flex; gap: 10px; }
-        input { flex-grow: 1; padding: 12px; border-radius: 5px; border: 1px solid #333; background: #222; color: white; }
-        button { padding: 12px 25px; background: #00d4ff; border: none; color: #000; font-weight: bold; cursor: pointer; border-radius: 5px; }
-    </style>
-</head>
-<body>
-    <div class="header">ESTADO: <span id="status">LISTO</span></div>
-    <video id="video" controls playsinline></video>
-    <div class="controls">
-        <input type="text" id="url" placeholder="Pega aquí el link .m3u8">
-        <button onclick="forzarCarga()">VER AHORA</button>
-    </div>
-
-    <script>
-        function forzarCarga() {
-            const video = document.getElementById('video');
-            const status = document.getElementById('status');
-            let url = document.getElementById('url').value.trim();
-            
-            if (!url) return;
-            status.textContent = "CONECTANDO...";
-
-            // Túnel para saltar bloqueos de internet
-            const tunnelUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(tunnelUrl);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    status.textContent = "TRANSMITIENDO";
-                    video.play();
-                });
-                hls.on(Hls.Events.ERROR, () => {
-                    // Si el túnel falla, intentamos directo
-                    hls.loadSource(url);
-                    status.textContent = "INTENTO DIRECTO...";
-                });
-            } else {
-                video.src = url;
-                video.play();
-            }
+        function p() {
+            var video = document.getElementById('v');
+            var url = document.getElementById('u').value.trim();
+            video.src = url;
+            video.play().catch(e => alert("Error: Haz clic en Play manualmente"));
         }
     </script>
 </body>
