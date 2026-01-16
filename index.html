@@ -2,42 +2,51 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>IPTV Brave Player</title>
-    <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
-    <script src="https://unpkg.com/video.js/dist/video.min.js"></script>
+    <title>IPTV Venezuela Pro</title>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; }
-        .player-container { width: 100%; max-width: 800px; margin: 20px auto; }
-        .video-js { width: 100%; height: 450px; border-radius: 8px; overflow: hidden; }
-        .controls { text-align: center; margin-top: 20px; }
-        input { width: 60%; padding: 12px; border-radius: 5px; border: 1px solid #444; background: #222; color: #00d4ff; }
-        button { padding: 12px 25px; background: #fb542b; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; height: 100vh; }
+        /* Menú Lateral */
+        .sidebar { width: 250px; background: #111; border-right: 1px solid #333; overflow-y: auto; padding: 10px; }
+        .sidebar h3 { font-size: 16px; color: #fb542b; text-align: center; }
+        .channel-btn { width: 100%; padding: 12px; background: #222; border: none; color: white; text-align: left; margin-bottom: 5px; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .channel-btn:hover { background: #fb542b; }
+        /* Área del Video */
+        .main { flex-grow: 1; display: flex; flex-direction: column; }
+        .video-js { width: 100% !important; height: 100% !important; }
+        .input-area { padding: 10px; background: #111; display: flex; gap: 5px; }
+        input { flex-grow: 1; background: #000; border: 1px solid #333; color: white; padding: 8px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="player-container">
-        <video id="video-brave" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto"></video>
-        
-        <div class="controls">
-            <input type="text" id="url-input" placeholder="Pega el link .m3u8 aquí...">
-            <button onclick="loadStream()">CARGAR CANAL</button>
+    <div class="sidebar">
+        <h3>MIS CANALES</h3>
+        <button class="channel-btn" onclick="play('https://telesur.akamaized.net/hls/main.m3u8')">📺 TeleSUR</button>
+        <button class="channel-btn" onclick="play('https://vevo-latino-1-es.samsung.wurl.com/manifest/playlist.m3u8')">🎵 Vevo Latino</button>
+        <button class="channel-btn" onclick="play('https://cm-cl-cl-samsung.vustreams.com/cl-cl/38473347-1965-4f36-928d-299387606342/playlist.m3u8')">🎬 Cine Clásico</button>
+        <button class="channel-btn" onclick="play('https://rt-esp.akamaized.net/hls/live/2018745/rtesp/master.m3u8')">🌍 RT en Español</button>
+    </div>
+
+    <div class="main">
+        <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto"></video>
+        <div class="input-area">
+            <input type="text" id="custom-url" placeholder="Pega otro link .m3u8 aquí...">
+            <button style="background:#444; color:white; border:none; padding:8px; cursor:pointer;" onclick="play(document.getElementById('custom-url').value)">CARGAR</button>
         </div>
     </div>
 
     <script>
-        // Inicializamos el reproductor
-        var player = videojs('video-brave');
+        var player = videojs('my-video');
 
-        function loadStream() {
-            var url = document.getElementById('url-input').value.trim();
-            if (url) {
-                player.src({
-                    src: url,
-                    type: 'application/x-mpegURL'
-                });
-                player.play();
-            }
+        function play(url) {
+            if(!url) return;
+            player.src({
+                src: url,
+                type: 'application/x-mpegURL'
+            });
+            player.play();
         }
     </script>
 </body>
